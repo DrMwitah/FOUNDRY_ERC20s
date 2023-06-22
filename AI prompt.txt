@@ -1,0 +1,71 @@
+Here is my solidity ERC20 token.
+
+```
+// contracts/OurToken.sol
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract OurToken is ERC20 {
+    constructor(uint256 initialSupply) ERC20("Mwitah", "MWITS") {
+        _mint(msg.sender, initialSupply);
+    }
+}
+```
+
+And here our my first couple of tests written in solidity.
+
+```
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.18;
+
+import {OurToken} from "src/OurToken.sol";
+import {DeployOurToken} from "script/DeployOurToken.s.sol";
+import {Test, console} from "forge-std/Test.sol";
+
+contract OurTokenTest is Test {
+    OurToken public ourToken;
+    DeployOurToken public deployer;
+
+    uint256 public STARTING_BALANCE = 100 ether;
+
+    address bob = makeAddr("bob");
+    address alice = makeAddr("alice");
+
+    function setUp() external {
+        deployer = new DeployOurToken();
+        ourToken = deployer.run();
+
+        vm.prank(msg.sender);
+        ourToken.transfer(bob, STARTING_BALANCE);
+    }
+
+    function testBobBalance() public view {
+        assert(STARTING_BALANCE == ourToken.balanceOf(bob));
+    }
+
+    function testAllowance() public {
+        uint256 initialALlowance = 1000;
+
+        vm.prank(bob);
+        ourToken.approve(alice, initialALlowance);
+
+        uint256 transferAmount = 500;
+
+        vm.prank(alice);
+        ourToken.transferFrom(bob, alice, transferAmount);
+
+        assertEq(ourToken.balanceOf(alice), transferAmount);
+        assertEq(ourToken.balanceOf(bob), STARTING_BALANCE - transferAmount);
+    }
+}
+
+```
+
+Can you write the rest of the tests? Please include tests for:
+
+- Allowances
+- transfers
+- anything else that might be important
